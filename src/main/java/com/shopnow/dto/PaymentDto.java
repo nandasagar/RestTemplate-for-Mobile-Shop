@@ -94,6 +94,14 @@ public class PaymentDto {
 		this.modeofpayment = modeofpayment;
 		this.id = id;
 	}
+
+	public PaymentDto(String fullname, String address, String city, String modeofpayment) {
+		super();
+		this.fullname = fullname;
+		this.address = address;
+		this.city = city;
+		this.modeofpayment = modeofpayment;
+	}
 	public PaymentDto() {
 		super();
 	}

@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
@@ -29,10 +30,11 @@ import com.shopnow.exception.ItemNotfoundException;
 import com.shopnow.exception.CartNotfoundException;
 import com.shopnow.exception.OrderNotfoundException;
 import com.shopnow.configuration.RestResponsePage;
-import com.shopnow.model.Cart;
-import com.shopnow.model.Item;
-import com.shopnow.model.Orders;
-import com.shopnow.model.Payment;
+import com.shopnow.dto.CartDto;
+import com.shopnow.dto.ItemDto;
+import com.shopnow.dto.OrdersDto;
+import com.shopnow.dto.PaymentDto;
+import com.shopnow.dto.UserDto;
 import com.shopnow.model.User;
 
 @RestController
@@ -73,7 +75,7 @@ public class ShopNowUser {
 				.path("/{model}").build().toString();
 		Map<String, String> params = new HashMap<String, String>();
 		params.put("model", "1025");
-		ResponseEntity<Item> result = restTemplate.getForEntity(targetUrl, Item.class, params);
+		ResponseEntity<ItemDto> result = restTemplate.getForEntity(targetUrl, ItemDto.class, params);
 		if (Objects.isNull(result)) {
 			logger.error("error found in getItemByModel");
 			throw new ItemNotfoundException("Item not Found.!");
@@ -107,7 +109,7 @@ public class ShopNowUser {
 	 * Post Method Saving or Registering new User using Exchange
 	 */
 	@PostMapping(value = "/saveUser")
-	public void saveUserDatausingExchange() {
+	public void saveUserDatausingExchange(@RequestBody UserDto userValues) {
 
 		// setting up the request headers
 		HttpHeaders requestHeaders = new HttpHeaders();
@@ -117,9 +119,9 @@ public class ShopNowUser {
 				.toString();
 		User user = new User("nanu3@gmail.com", "Ninu3", (long) 906614460, "nanu3", "User");
 
-		HttpEntity<User> requestEntity = new HttpEntity<>(user, requestHeaders);
+		HttpEntity<UserDto> requestEntity = new HttpEntity<>(userValues, requestHeaders);
 
-		ResponseEntity<User> result = restTemplate.exchange(targetUrl, HttpMethod.POST, requestEntity, User.class);
+		ResponseEntity<UserDto> result = restTemplate.exchange(targetUrl, HttpMethod.POST, requestEntity, UserDto.class);
 		if (Objects.isNull(result)) {
 			logger.error("error found in saveUserDatausingExchange");
 			throw new UserNotfoundException("User Data not Found.!");
@@ -164,14 +166,14 @@ public class ShopNowUser {
 
 		String targetUrl = UriComponentsBuilder.fromUriString("http://localhost:9092").path("/User").path("/saveCart")
 				.build().toString();
-		ParameterizedTypeReference<RestResponsePage<Cart>> responsePage = new ParameterizedTypeReference<RestResponsePage<Cart>>() {
+		ParameterizedTypeReference<RestResponsePage<CartDto>> responsePage = new ParameterizedTypeReference<RestResponsePage<CartDto>>() {
 		};
 		Map<String, String> params = new HashMap<String, String>();
 		params.put("id", "10");
-		Cart cart = new Cart(10, "kl@gmail.com", "MI_2A", 1025, 3, 1200, 1200);
+		CartDto cart = new CartDto(10, "kl@gmail.com", "MI_2A", 1025, 3, 1200, 1200);
 
-		HttpEntity<Cart> requestEntity = new HttpEntity<>(cart, requestHeaders);
-		ResponseEntity<RestResponsePage<Cart>> response = restTemplate.exchange(targetUrl, HttpMethod.POST,
+		HttpEntity<CartDto> requestEntity = new HttpEntity<>(cart, requestHeaders);
+		ResponseEntity<RestResponsePage<CartDto>> response = restTemplate.exchange(targetUrl, HttpMethod.POST,
 				requestEntity, responsePage, params);
 		if (Objects.isNull(response)) {
 			logger.error("error found in saveCartDatausingExchange");
@@ -179,11 +181,11 @@ public class ShopNowUser {
 		}
 		
 		System.out.println(response.getBody());
-		Page<Cart> pageOfItem = response.getBody();
+		Page<CartDto> pageOfItem = response.getBody();
 		logger.info("ShopNowUser saveCartDatausingExchange() response{}", pageOfItem);
 		System.out.println("Size " + pageOfItem.getSize());
 		System.out.println(pageOfItem.getContent());
-		List<Cart> cartList = pageOfItem.getContent();
+		List<CartDto> cartList = pageOfItem.getContent();
 		System.out.println("Cart List Data after Adding " + cartList);
 
 	}
@@ -199,23 +201,23 @@ public class ShopNowUser {
 		requestHeaders.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
 		String targetUrl = UriComponentsBuilder.fromUriString("http://localhost:9092").path("/User").path("/remove")
 				.path("/{id}").path("/{cartid}").build().toString();
-		ParameterizedTypeReference<RestResponsePage<Cart>> responsePage = new ParameterizedTypeReference<RestResponsePage<Cart>>() {
+		ParameterizedTypeReference<RestResponsePage<CartDto>> responsePage = new ParameterizedTypeReference<RestResponsePage<CartDto>>() {
 		};
 		Map<String, String> params = new HashMap<String, String>();
 		params.put("id", "10");
 		params.put("cartid", "159");
-		ResponseEntity<RestResponsePage<Cart>> response = restTemplate.exchange(targetUrl, HttpMethod.DELETE, null,
+		ResponseEntity<RestResponsePage<CartDto>> response = restTemplate.exchange(targetUrl, HttpMethod.DELETE, null,
 				responsePage, params);
 		if (Objects.isNull(response)) {
 			logger.error("error found in deleteCartData");
 			throw new CartNotfoundException("Deletion of Cart Data Failed.!");
 		}
 		System.out.println(response.getBody());
-		Page<Cart> pageOfItem = response.getBody();
+		Page<CartDto> pageOfItem = response.getBody();
 		logger.info("ShopNowUser deleteCartData() response{}", pageOfItem);
 		System.out.println("Size of Page " + pageOfItem.getSize());
 		System.out.println(pageOfItem.getContent());
-		List<Cart> cartList = pageOfItem.getContent();
+		List<CartDto> cartList = pageOfItem.getContent();
 		System.out.println("Cart List Data after Delete " + cartList);
 		System.out.println("Size of cartList " + cartList.size());
 
@@ -229,25 +231,25 @@ public class ShopNowUser {
 
 		String targetUrl = UriComponentsBuilder.fromUriString("http://localhost:9092").path("/User").path("/saveOrders")
 				.path("/{id}").build().toString();
-		ParameterizedTypeReference<RestResponsePage<Orders>> responsePage = new ParameterizedTypeReference<RestResponsePage<Orders>>() {
+		ParameterizedTypeReference<RestResponsePage<OrdersDto>> responsePage = new ParameterizedTypeReference<RestResponsePage<OrdersDto>>() {
 		};
 		Map<String, String> params = new HashMap<String, String>();
 		params.put("id", "10");
 
-		ResponseEntity<RestResponsePage<Orders>> response = restTemplate.exchange(targetUrl, HttpMethod.POST, null,
+		ResponseEntity<RestResponsePage<OrdersDto>> response = restTemplate.exchange(targetUrl, HttpMethod.POST, null,
 				responsePage, params);
 		if (Objects.isNull(response)) {
 			logger.error("error found in saveOrdersDatausingExchange");
 			throw new OrderNotfoundException("Saving of Order Data Failed.!");
 		}
 		System.out.println(response.getBody());
-		Page<Orders> pageOfItem = response.getBody();
+		Page<OrdersDto> pageOfItem = response.getBody();
 		logger.info("ShopNowUser saveOrdersDatausingExchange() response{}", pageOfItem);
 		System.out.println("page Size " + pageOfItem.getSize());
 		System.out.println(pageOfItem.getContent());
-		List<Orders> orderList = pageOfItem.getContent();
+		List<OrdersDto> orderList = pageOfItem.getContent();
 		System.out.println("Orders List Data after Adding " + orderList);
-
+// middle row //  first row  //last row
 	}
 
 	/**
@@ -261,24 +263,24 @@ public class ShopNowUser {
 		requestHeaders.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
 		String targetUrl = UriComponentsBuilder.fromUriString("http://localhost:9092").path("/User")
 				.path("/removeOrder").path("/{id}").path("/{orderid}").build().toString();
-		ParameterizedTypeReference<RestResponsePage<Orders>> responsePage = new ParameterizedTypeReference<RestResponsePage<Orders>>() {
+		ParameterizedTypeReference<RestResponsePage<OrdersDto>> responsePage = new ParameterizedTypeReference<RestResponsePage<OrdersDto>>() {
 		};
 		Map<String, String> params = new HashMap<String, String>();
 		params.put("id", "10");
 		params.put("orderid", "162");
-		ResponseEntity<RestResponsePage<Orders>> response = restTemplate.exchange(targetUrl, HttpMethod.DELETE, null,
+		ResponseEntity<RestResponsePage<OrdersDto>> response = restTemplate.exchange(targetUrl, HttpMethod.DELETE, null,
 				responsePage, params);
 		if (Objects.isNull(response)) {
 			logger.error("error found in deleteOrderData");
 			throw new OrderNotfoundException("Deletion of Order Data Failed.!");
 		}
 		System.out.println(response.getBody());
-		Page<Orders> pageOfItem = response.getBody();
+		Page<OrdersDto> pageOfItem = response.getBody();
 		logger.info("ShopNowUser deleteOrderData() response{}", pageOfItem);
 		
 		System.out.println("Size of Page " + pageOfItem.getSize());
 		System.out.println(pageOfItem.getContent());
-		List<Orders> ordersList = pageOfItem.getContent();
+		List<OrdersDto> ordersList = pageOfItem.getContent();
 		System.out.println("Orders List Data after Delete " + ordersList);
 		System.out.println("Size of OrdersList " + ordersList.size());
 
@@ -292,24 +294,24 @@ public class ShopNowUser {
 
 		String targetUrl = UriComponentsBuilder.fromUriString("http://localhost:9092").path("/User")
 				.path("/getAllOrder").path("/{id}").build().toString();
-		ParameterizedTypeReference<RestResponsePage<Orders>> responsePage = new ParameterizedTypeReference<RestResponsePage<Orders>>() {
+		ParameterizedTypeReference<RestResponsePage<OrdersDto>> responsePage = new ParameterizedTypeReference<RestResponsePage<OrdersDto>>() {
 		};
 		Map<String, String> params = new HashMap<String, String>();
 		params.put("id", "10");
 
-		ResponseEntity<RestResponsePage<Orders>> response = restTemplate.exchange(targetUrl, HttpMethod.GET, null,
+		ResponseEntity<RestResponsePage<OrdersDto>> response = restTemplate.exchange(targetUrl, HttpMethod.GET, null,
 				responsePage, params);
 		if (Objects.isNull(response)) {
 			logger.error("error found in getUnPaidOrdersDatausingExchange");
 			throw new OrderNotfoundException("Incorrect Details Entered or No Data to Display UnPaidOrders!");
 		}
 		System.out.println(response.getBody());
-		Page<Orders> pageOfItem = response.getBody();
+		Page<OrdersDto> pageOfItem = response.getBody();
 		logger.info("ShopNowUser getUnPaidOrdersDatausingExchange() response{}", pageOfItem);
 		
 		System.out.println("page Size " + pageOfItem.getSize());
 		System.out.println(pageOfItem.getContent());
-		List<Orders> orderList = pageOfItem.getContent();
+		List<OrdersDto> orderList = pageOfItem.getContent();
 		System.out.println("Un Paid Orders List Data after Adding " + orderList);
 
 	}
@@ -327,26 +329,26 @@ public class ShopNowUser {
 
 		String targetUrl = UriComponentsBuilder.fromUriString("http://localhost:9092").path("/User").path("/savePay")
 				.path("/{id}").build().toString();
-		ParameterizedTypeReference<RestResponsePage<Payment>> responsePage = new ParameterizedTypeReference<RestResponsePage<Payment>>() {
+		ParameterizedTypeReference<RestResponsePage<PaymentDto>> responsePage = new ParameterizedTypeReference<RestResponsePage<PaymentDto>>() {
 		};
 		Map<String, String> params = new HashMap<String, String>();
 		params.put("id", "10");
-		Payment payment = new Payment("Nandau", "Dasarahaliii", "Bangalore", "loan");
-		HttpEntity<Payment> requestEntity = new HttpEntity<>(payment, requestHeaders);
+		PaymentDto payment = new PaymentDto("Nandau", "Dasarahaliii", "Bangalore", "loan");
+		HttpEntity<PaymentDto> requestEntity = new HttpEntity<>(payment, requestHeaders);
 
-		ResponseEntity<RestResponsePage<Payment>> response = restTemplate.exchange(targetUrl, HttpMethod.POST,
+		ResponseEntity<RestResponsePage<PaymentDto>> response = restTemplate.exchange(targetUrl, HttpMethod.POST,
 				requestEntity, responsePage, params);
 		if (Objects.isNull(response)) {
 			logger.error("error found in savePaymentDatausingExchange");
 			throw new OrderNotfoundException("Saving of Payment Data Failed.!");
 		}
 		System.out.println(response.getBody());
-		Page<Payment> pageOfItem = response.getBody();
+		Page<PaymentDto> pageOfItem = response.getBody();
 		logger.info("ShopNowUser savePaymentDatausingExchange() response{}", pageOfItem);
 		
 		System.out.println("page Size " + pageOfItem.getSize());
 		System.out.println(pageOfItem.getContent());
-		List<Payment> orderList = pageOfItem.getContent();
+		List<PaymentDto> orderList = pageOfItem.getContent();
 		System.out.println("Paid Orders List Data after Adding " + orderList);
 
 	}
@@ -359,24 +361,24 @@ public class ShopNowUser {
 
 		String targetUrl = UriComponentsBuilder.fromUriString("http://localhost:9092").path("/User").path("/getOrder")
 				.path("/{id}").build().toString();
-		ParameterizedTypeReference<RestResponsePage<Payment>> responsePage = new ParameterizedTypeReference<RestResponsePage<Payment>>() {
+		ParameterizedTypeReference<RestResponsePage<PaymentDto>> responsePage = new ParameterizedTypeReference<RestResponsePage<PaymentDto>>() {
 		};
 		Map<String, String> params = new HashMap<String, String>();
 		params.put("id", "10");
 
-		ResponseEntity<RestResponsePage<Payment>> response = restTemplate.exchange(targetUrl, HttpMethod.GET, null,
+		ResponseEntity<RestResponsePage<PaymentDto>> response = restTemplate.exchange(targetUrl, HttpMethod.GET, null,
 				responsePage, params);
 		if (Objects.isNull(response)) {
 			logger.error("error found in getUnPaidOrdersDatausingExchange");
 			throw new CartNotfoundException("Incorrect Details Entered or No Data to Display PaidOrders!");
 		}
 		System.out.println(response.getBody());
-		Page<Payment> pageOfItem = response.getBody();
+		Page<PaymentDto> pageOfItem = response.getBody();
 		logger.info("ShopNowUser getUnPaidOrdersDatausingExchange() response{}", pageOfItem);
 		
 		System.out.println("page Size " + pageOfItem.getSize());
 		System.out.println(pageOfItem.getContent());
-		List<Payment> orderList = pageOfItem.getContent();
+		List<PaymentDto> orderList = pageOfItem.getContent();
 		System.out.println("Paid Orders List Data after Adding " + orderList);
 
 	}
@@ -389,24 +391,24 @@ public class ShopNowUser {
 
 		String targetUrl = UriComponentsBuilder.fromUriString("http://localhost:9092").path("/User").path("/search")
 				.path("/{searchItem}").build().toString();
-		ParameterizedTypeReference<RestResponsePage<Item>> responsePage = new ParameterizedTypeReference<RestResponsePage<Item>>() {
+		ParameterizedTypeReference<RestResponsePage<ItemDto>> responsePage = new ParameterizedTypeReference<RestResponsePage<ItemDto>>() {
 		};
 		Map<String, String> params = new HashMap<String, String>();
 		params.put("searchItem", "apple");
 
-		ResponseEntity<RestResponsePage<Item>> response = restTemplate.exchange(targetUrl, HttpMethod.GET, null,
+		ResponseEntity<RestResponsePage<ItemDto>> response = restTemplate.exchange(targetUrl, HttpMethod.GET, null,
 				responsePage, params);
 		if (Objects.isNull(response)) {
 			logger.error("error found in getSearchedItemDatausingExchange");
 			throw new ItemNotfoundException("Incorrect Details Entered or No Data to Display Searched Item!");
 		}
 		System.out.println(response.getBody());
-		Page<Item> pageOfItem = response.getBody();
+		Page<ItemDto> pageOfItem = response.getBody();
 		logger.info("ShopNowUser getUserData() getSearchedItemDatausingExchange{}", pageOfItem);
 		
 		System.out.println("page Size " + pageOfItem.getSize());
 		System.out.println(pageOfItem.getContent());
-		List<Item> searchList = pageOfItem.getContent();
+		List<ItemDto> searchList = pageOfItem.getContent();
 		System.out.println("searched Item List Data " + searchList);
 
 	}

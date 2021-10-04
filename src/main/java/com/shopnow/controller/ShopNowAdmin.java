@@ -18,6 +18,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -45,15 +46,15 @@ public class ShopNowAdmin {
 	/**
 	 * validating Admin data before Logging In
 	 */
-	@GetMapping(value = "/validateAdmin", produces = { MediaType.APPLICATION_XML_VALUE,
+	@GetMapping(value = "/validateAdmin/{email}/{password}", produces = { MediaType.APPLICATION_XML_VALUE,
 			MediaType.APPLICATION_JSON_VALUE })
-	public void getUserData() {
-		String targetUrl = UriComponentsBuilder.fromUriString("http://localhost:9092").path("/validateAdmin")
+	public String getUserData(@PathVariable String email, @PathVariable String password) {
+		String targetUrl = UriComponentsBuilder.fromUriString("http://localhost:9092").path("/validateUser")
 				.path("/{email}").path("/{password}").build().toString();
 		RestTemplate restTemplate = new RestTemplate();
 		Map<String, String> params = new HashMap<String, String>();
-		params.put("email", "sagar@gmail.com");
-		params.put("password", "sagar123");
+		params.put("email", email);
+		params.put("password", password);
 		ResponseEntity<String> result = restTemplate.getForEntity(targetUrl, String.class, params);
 		if (Objects.isNull(result)) {
 			logger.error("error found in getUserData");
@@ -61,6 +62,7 @@ public class ShopNowAdmin {
 		}
 		logger.info("ShopNowAdmin getUserData() response{}", result.getBody());
 		System.out.println(result.getBody());
+		return result.getBody();
 	}
 
 	/**
@@ -160,7 +162,7 @@ public class ShopNowAdmin {
 		System.out.println(response.getBody());
 		Page<Item> pageOfItem = response.getBody();
 		logger.info("ShopNowAdmin getAllItems() response{}", pageOfItem);
-		
+
 		System.out.println("Size " + pageOfItem.getSize());
 		System.out.println(pageOfItem.getContent());
 		List<Item> itemList = pageOfItem.getContent();
@@ -188,7 +190,7 @@ public class ShopNowAdmin {
 			throw new ItemNotfoundException("No Item Found.!");
 		}
 		logger.info("ShopNowAdmin getItemByModel() response{}", resultExchange.getBody());
-		
+
 		System.out.println("Using Exchange " + resultExchange.getBody());
 		System.out.println("Using getforEntity " + result.getBody());
 	}
@@ -212,15 +214,22 @@ public class ShopNowAdmin {
 		System.out.println(response.getBody());
 		Page<User> pageOfUser = response.getBody();
 		logger.info("ShopNowAdmin getAllUsersByExchange() response{}", pageOfUser);
-		
+
 		System.out.println("Size " + pageOfUser.getSize());
 		System.out.println(pageOfUser.getContent());
 		List<User> userList = pageOfUser.getContent();
 		System.out.println("Users List Data" + userList);
-		for (User temp : userList) {
+		System.out.println(userList.size());
+		/*	for (User temp : userList) {
 			if (temp.getRolename().contains("Admin"))
 				System.out.println(temp);
-		}
+		}*/
+		// Using Lambda Function
+		userList.forEach(user -> {
+			if (user.getEmail().contains("zozo"))
+				System.out.println("Using Lambda " + user);
+		}); 
+
 	}
 
 	/**
@@ -251,11 +260,16 @@ public class ShopNowAdmin {
 		System.out.println(response.getBody());
 		Page<Item> pageOfItem = response.getBody();
 		logger.info("ShopNowAdmin updateItem() response{}", pageOfItem);
-		
+
 		System.out.println("Size " + pageOfItem.getSize());
 		System.out.println(pageOfItem.getContent());
 		List<Item> itemList = pageOfItem.getContent();
 		System.out.println("Item List Data " + itemList);
+		itemList.forEach(item -> {
+			if (item.getItemtype().contains("applemobile"))
+				System.out.println("Using Lambda " + item);
+		});
+
 	}
 
 	/**
@@ -285,10 +299,15 @@ public class ShopNowAdmin {
 		System.out.println(response.getBody());
 		Page<Item> pageOfItem = response.getBody();
 		logger.info("ShopNowAdmin addNewItem() response{}", pageOfItem);
-		
+
 		System.out.println("Size " + pageOfItem.getSize());
 		System.out.println(pageOfItem.getContent());
 		List<Item> itemList = pageOfItem.getContent();
+		itemList.forEach(item -> {
+			if (item.getItemtype().contains("usb"))
+				System.out.println("Using Lambda " + item);
+		});
+
 		System.out.println("Item List Data after adding " + itemList);
 	}
 
@@ -318,7 +337,7 @@ public class ShopNowAdmin {
 		System.out.println(response.getBody());
 		Page<Item> pageOfItem = response.getBody();
 		logger.info("ShopNowAdmin removeItem() response{}", pageOfItem);
-		
+
 		System.out.println("Size " + pageOfItem.getSize());
 		System.out.println(pageOfItem.getContent());
 		List<Item> itemList = pageOfItem.getContent();
