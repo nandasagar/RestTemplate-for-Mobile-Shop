@@ -76,7 +76,7 @@ public class ShopNowAdmin {
 		requestHeaders.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
 		String targetUrl = UriComponentsBuilder.fromUriString("http://localhost:9092").path("/saveAdmin").build()
 				.toString();
-		User user = new User("Ashwini@gmail.com", "NinuNanu", (long) 906616795, "we3", "Admin");
+		User user = new User("Ashwini@gmail.com", "bangalore", (long) 906711195, "we3", "Admin");
 
 		HttpEntity<User> requestEntity = new HttpEntity<>(user, requestHeaders);
 
@@ -100,7 +100,7 @@ public class ShopNowAdmin {
 		requestHeaders.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
 		String targetUrl = UriComponentsBuilder.fromUriString("http://localhost:9092").path("/updateAdmin").build()
 				.toString();
-		User user = new User(187, "Ashwini@gmail.com", "Nanu", (long) 906616795, "we2", "Admin");
+		User user = new User(187, "Ashwini@gmail.com", "bangalore", (long) 906111795, "we2", "Admin");
 		HttpEntity<User> requestEntity = new HttpEntity<>(user, requestHeaders);
 
 		ResponseEntity<User> result = restTemplate.exchange(targetUrl, HttpMethod.PUT, requestEntity, User.class);
